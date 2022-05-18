@@ -39,8 +39,10 @@ public class CrudController {
 	public String selectList(@ModelAttribute("searchVO") CrudVO searchVO,  
 			HttpServletRequest request, ModelMap model) throws Exception{
 		
+		//페이지 네이션		
 		PaginationInfo paginationInfo = new PaginationInfo();
 
+    
 		paginationInfo.setCurrentPageNo(searchVO.getPageIndex());
 		paginationInfo.setRecordCountPerPage(searchVO.getPageUnit());
 		paginationInfo.setPageSize(searchVO.getPageSize());
@@ -53,6 +55,8 @@ public class CrudController {
 		
 		paginationInfo.setTotalRecordCount(totCnt);
 		model.addAttribute("paginationInfo", paginationInfo);
+		//페이지 네이션
+		
 		
 		List<EgovMap> resultList = crudService.selectCrudList(searchVO);
 		model.addAttribute("resultList", resultList);

@@ -26,6 +26,9 @@ public class CrudServiceImpl extends EgovAbstractServiceImpl implements CrudServ
     @Resource(name = "egovCrudIdGnrService")
     private EgovIdGnrService idgenService;
     
+//    @Resource(name = "egovBoardIdGnrService")
+//    private EgovIdGnrService ;
+    
 	//CRUD 목록 가져오기
 	public List<EgovMap> selectCrudList(CrudVO vo) throws Exception {
 		return crudMapper.selectCrudList(vo);
