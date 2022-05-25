@@ -41,6 +41,21 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 		return boardMapper.selectBoardListCnt(vo);
 	}
 	
+	//board 게시물 가져오기
+	public BoardVO selectBoard(BoardVO vo) throws Exception{
+		return null;
+	}
+	
+	//board 게시물 등록하기
+	@Override
+	public String insertBoard(BoardVO vo) throws Exception{
+		String id=idgenService.getNextStringId();
+		vo.setBoardId(id);
+		boardMapper.insertBoard(vo);
+		
+		return id;
+	}
+	
 	//CRUD 등록하기
 //	public String insertCrud(CrudVO vo) throws Exception{
 //		String id = idgenService.getNextStringId();

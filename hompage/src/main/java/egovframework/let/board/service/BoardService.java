@@ -27,11 +27,17 @@ public interface BoardService {
 //	//CRUD 삭제하기
 //	public void deleteCrud(BoardVO vo) throws Exception;
 	
-	//board 리스트
+	//board 리스트 목록 가져오기
 	public List<EgovMap> selectBoardList(BoardVO vo)throws Exception;
 	
-	//board 카운트
+	//board 가져오기
+	public BoardVO selectBoard(BoardVO vo) throws Exception;
+	
+	//board 카운트 게시물 목록수
 	public int selectBoardListCnt(BoardVO vo)throws Exception;
+	
+	//board 게시물 등록하기
+	public String insertBoard(BoardVO vo) throws Exception;
 	
 	
 	

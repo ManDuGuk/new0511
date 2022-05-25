@@ -35,7 +35,8 @@ public interface BoardMapper {
 	//board 목록 수
 	int selectBoardListCnt(BoardVO vo) throws Exception;
 	
-	
+	//board 게시물 등록
+	void insertBoard(BoardVO vo)throws Exception;
 	
 	
 	
