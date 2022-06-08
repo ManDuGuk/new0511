@@ -37,6 +37,7 @@ public class BoardController {
 		
 		//공지 게시글
 		searchVO.setNoticeAt("Y");
+		//모든 공지글을 가져온다.
 		List<EgovMap> noticeResultList = boardService.selectBoardList(searchVO);
 		model.addAttribute("noticeResultList", noticeResultList);
 		
@@ -51,11 +52,11 @@ public class BoardController {
 		searchVO.setLastIndex(paginationInfo.getLastRecordIndex());
 		searchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
 		
-		//여기추가됨
+		//공지 게시글 아닌것
 		searchVO.setNoticeAt("N");
+		//모든 일반글을 가져온다.
 		List<EgovMap> resultList = boardService.selectBoardList(searchVO);
 		model.addAttribute("resultList", resultList);
-		//
 		
 		int totCnt = boardService.selectBoardListCnt(searchVO);
 		
@@ -63,14 +64,10 @@ public class BoardController {
 		model.addAttribute("paginationInfo", paginationInfo);
 		//페이지 네이션
 		
-		//여기추가됨
+		//회원정보를 가져온다.
 		LoginVO user=(LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
 		model.addAttribute("USER_INFO", user);
 		//
-		
-		
-		
-		
 		return "board/BoardSelectList";
 	}
 	
@@ -94,15 +91,15 @@ public class BoardController {
 		BoardVO result = new BoardVO();
 		if(!EgovStringUtil.isEmpty(BoardVO.getBoardId())) {
 			
-//			result = boardService.selectBoard(BoardVO);
-//			//본인 및 관리자만 허용(변조 방지)
+			result = boardService.selectBoard(BoardVO);
+			//본인 및 관리자만 허용(변조 방지)
 			//유저아이디와 관리자 아이디와 같지 않으면
-//			if(!user.getId().equals(result.getFrstRegisterId()) && !"admin".equals(user.getId())) {
+			if(!user.getId().equals(result.getFrstRegisterId()) && !"admin".equals(user.getId())) {
 				//작성자 본인만 확인 가능
-//				model.addAttribute("message","작성자 본인만 확인 가능합니다.");
+				model.addAttribute("message","작성자 본인만 확인 가능합니다.");
 				//그리고 리스트로 돌려보낸다.
-//				return "forward:/board/selectList.do";
-//			}
+				return "forward:/board/selectList.do";
+			}
 		}
 		model.addAttribute("result", result);
 		
@@ -151,14 +148,99 @@ public class BoardController {
 		//그리고 다시 리스트로 이동시킨다. 
 		return "forward:/board/selectList.do";
 	}
-//	
-//	//CRUD 가져오기
-//	@RequestMapping(value = "/crud/select.do")
-//	public String select(@ModelAttribute("searchVO") CrudVO searchVO, HttpServletRequest request, ModelMap model) throws Exception{
-//		CrudVO result = crudService.selectCrud(searchVO);
-//		model.addAttribute("result", result);
-//		return "crud/CrudSelect";
-//	}
+	
+	//board 가져오기
+	@RequestMapping(value = "/board/select.do")
+	public String select(@ModelAttribute("searchVO") BoardVO searchVO, HttpServletRequest request, ModelMap model) throws Exception{
+		
+		//로그인 유저정보를 받아온다.
+		LoginVO user = (LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
+		//jsp로 넘겨준다.
+		model.addAttribute("USER_INFO", user);
+		//게시물의 상세정보를 가져온다.쿼리를 타고 가져온다.
+		BoardVO result=boardService.selectBoard(searchVO);
+		
+		//비밀글 여부 체크
+		if("Y".equals(result.getOthbcAt())) {
+			//본인 및 관리자만 허용
+			if(user ==null || user.getId() ==null || (!user.getId().equals(user.getId()) && !"admin".equals(user.getId()))) {
+				//if문을 통해 걸러진 허용권한이 없는 사람에겐 메세지 전송
+				model.addAttribute("message","작성자 본인만 확인 가능합니다.");
+				return "forward:/board/selectList.do";
+			}
+			
+		}
+		model.addAttribute("result",result);
+		return "board/BoardSelect";
+	}
+	
+	
+	//board게시물 수정하기
+	@RequestMapping(value = "/board/update.do")
+	public String update(@ModelAttribute("searchVO") BoardVO searchVO, HttpServletRequest request, ModelMap model) throws Exception{
+		
+	
+		//이중 서브밋 방지 체크 (f5누르면 계속 등록 되는거 방지하기위해서)
+		//2.다시 f5를 누른순간 sessionBoard에 들어가있는 파라미터값이 있는지 여부를 검사해서 중복등록되지 않게 루트를 짰다.
+		if(request.getSession().getAttribute("sessionBoard") !=null) {
+			return "forward:/board/selectList.do";
+		}
+		
+		//로그인 유저정보를 받아온다.
+		LoginVO user = (LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
+		
+		//유저가 없거나 아이디가 없으면
+		if(user==null||user.getId()==null) {
+			model.addAttribute("message","로그인후 사용가능합니다.");
+			//로그인후 사용가능하게 돌려보낸다.
+			return "forward:/board/selectList.do";
+		//관리자가 유저의 아이디와 같다면	
+		}else if("admin".equals(user.getId())) {
+			//MnAt는 관리자 여부 = y
+			searchVO.setMngAt("Y");
+		}
+		
+		//유저 아이디에 셋한다.
+		searchVO.setUserId(user.getId());
+		
+		boardService.updateBoard(searchVO);
+		
+		//이중 서브밋 방지
+		//1.등록이 일어날때 파라미터를 세션에 저장한다.
+		request.getSession().setAttribute("sessionBoard", searchVO);
+		//그리고 다시 리스트로 이동시킨다. 
+		return "forward:/board/selectList.do";
+	}
+	
+	//board게시물 삭제하기
+		@RequestMapping(value = "/board/delete.do")
+		public String delete(@ModelAttribute("searchVO") BoardVO searchVO, HttpServletRequest request, ModelMap model) throws Exception{
+			
+			
+			//로그인 유저정보를 받아온다.
+			LoginVO user = (LoginVO)EgovUserDetailsHelper.getAuthenticatedUser();
+			
+			//유저가 없거나 아이디가 없으면
+			if(user==null||user.getId()==null) {
+				model.addAttribute("message","로그인후 사용가능합니다.");
+				//로그인후 사용가능하게 돌려보낸다.
+				return "forward:/board/selectList.do";
+			//관리자가 유저의 아이디와 같다면	
+			}else if("admin".equals(user.getId())) {
+				//MnAt는 관리자 여부 = y
+				searchVO.setMngAt("Y");
+			}
+			
+			//유저 아이디에 셋한다.
+			searchVO.setUserId(user.getId());
+			
+			boardService.deleteBoard(searchVO);
+			
+			//그리고 다시 리스트로 이동시킨다. 
+			return "forward:/board/selectList.do";
+		}
+	
+	
 //	
 //	//CRUD 수정하기
 //	@RequestMapping(value = "/crud/update.do")

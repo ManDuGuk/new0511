@@ -40,11 +40,7 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 	public int selectBoardListCnt(BoardVO vo) throws Exception {
 		return boardMapper.selectBoardListCnt(vo);
 	}
-	
-	//board 게시물 가져오기
-	public BoardVO selectBoard(BoardVO vo) throws Exception{
-		return null;
-	}
+
 	
 	//board 게시물 등록하기
 	@Override
@@ -56,29 +52,36 @@ public class BoardServiceImpl extends EgovAbstractServiceImpl implements BoardSe
 		return id;
 	}
 	
-	//CRUD 등록하기
-//	public String insertCrud(CrudVO vo) throws Exception{
-//		String id = idgenService.getNextStringId();
-//		vo.setCrudId(id);
-//		crudMapper.insertCrud(vo);
-//		
-//		return id;
-//	}
-//	
-//	//CRUD 가져오기
-//	public CrudVO selectCrud(CrudVO vo) throws Exception{
-//		return crudMapper.selectCrud(vo);
-//	}
-//	
-//	//CRUD 수정하기
-//	public void updateCrud(CrudVO vo) throws Exception{
-//		crudMapper.updateCrud(vo);
-//	}
-//	
-//	//CRUD 삭제하기
-//	public void deleteCrud(CrudVO vo) throws Exception{
-//		crudMapper.deleteCrud(vo);
-//	}
+	//board 게시물 가져오기
+	@Override
+	public BoardVO selectBoard(BoardVO vo) throws Exception{
+		//조회수 업
+		//컨트롤에다가 않넣고 여기다가 넣은이유
+		//임플을 쓰는 이유를 생각해봐야한다.
+		//트랜젝션처리-->임플
+		//필기참고
+		//컨트롤러에서 구현하면 에러가 날시 롤백이 되지 않는다.
+		//임플에서 해당 코드를 구현하면 에러가 날씨 롤백이 되도록 만들어졌기 때문에 롤백되도록 하기 위해 여기에다가 해당 기능을 구현한것이다.
+		//특히 이런구조는 쇼핑몰같은 곳에서 자주쓰인다. 에러났는데 주문을 발주되어버리는 대형사고 같은게 나버리면 안되자너
+		boardMapper.updateViewCnt(vo);
+		
+		return boardMapper.selectBoard(vo);
+	}
+
+	//board 게시물 수정하기
+	@Override
+	public void updateBoard(BoardVO vo) throws Exception {
+		boardMapper.updateBoard(vo);
+		
+	}
+
+	//board 게시물 삭제하기
+	@Override
+	public void deleteBoard(BoardVO vo) throws Exception {
+		boardMapper.deleteBoard(vo);
+		
+	}
 	
+
 	
 }

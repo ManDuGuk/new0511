@@ -11,23 +11,6 @@ import egovframework.rte.psl.dataaccess.util.EgovMap;
 @Mapper("boardMapper")
 public interface BoardMapper {
 	
-	//CRUD 목록 가져오기
-//	List<EgovMap> selectCrudList(CrudVO vo) throws Exception;
-//	
-//	//CRUD 목록 수
-//	int selectCrudListCnt(CrudVO vo) throws Exception;
-//	
-//	//CRUD 등록
-//	void insertCrud(CrudVO vo) throws Exception;
-//	
-//	//CRUD 상세
-//	CrudVO selectCrud(CrudVO vo) throws Exception;
-//	
-//	//CRUD 수정하기
-//	void updateCrud(CrudVO vo) throws Exception;
-//	
-//	//CRUD 삭제하기
-//	void deleteCrud(CrudVO vo) throws Exception;
 	
 	//board 목록 가져오기
 	List<EgovMap> selectBoardList(BoardVO vo) throws Exception;
@@ -37,6 +20,18 @@ public interface BoardMapper {
 	
 	//board 게시물 등록
 	void insertBoard(BoardVO vo)throws Exception;
+
+	//board 상세정보
+	BoardVO selectBoard(BoardVO vo) throws Exception;
+	
+	//board 조회수 업
+	void updateViewCnt(BoardVO vo) throws Exception;
+
+	//board 게시물 수정
+	void updateBoard(BoardVO vo)throws Exception;
+
+	//board 게시물 삭제
+	void deleteBoard(BoardVO vo)throws Exception;
 	
 	
 	

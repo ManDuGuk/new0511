@@ -91,7 +91,7 @@ public class BoardVO extends ComDefaultVO implements Serializable {
 	//사용자 id
 	private String userId;
 	//관리자 여부
-	private String mnAt;
+	private String mngAt;
 	
 	//겟터셋터
 	public String getBoardId() {
@@ -178,11 +178,11 @@ public class BoardVO extends ComDefaultVO implements Serializable {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	public String getMnAt() {
-		return mnAt;
+	public String getMngAt() {
+		return mngAt;
 	}
-	public void setMnAt(String mnAt) {
-		this.mnAt = mnAt;
+	public void setMngAt(String mngAt) {
+		this.mngAt = mngAt;
 	}
 	
 	

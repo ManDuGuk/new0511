@@ -5,12 +5,7 @@
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<%-- 기본 URL --%>
-<c:url var="_BASE_PARAM" value="">
-	<c:param name="menuNo" value="50"/>
-  	<c:if test="${not empty searchVO.searchCondition}"><c:param name="searchCondition" value="${searchVO.searchCondition}" /></c:if>
-  	<c:if test="${not empty searchVO.searchKeyword}"><c:param name="searchKeyword" value="${searchVO.searchKeyword}" /></c:if>
-</c:url>
+
 
 <!DOCTYPE html>
 <html>
@@ -27,8 +22,17 @@
 </head>
 <body>
 
+<%-- 기본 URL --%>
+<c:url var="_BASE_PARAM" value="">
+	<c:param name="menuNo" value="50"/>
+  	<c:if test="${not empty searchVO.searchCondition}"><c:param name="searchCondition" value="${searchVO.searchCondition}" /></c:if>
+  	<c:if test="${not empty searchVO.searchKeyword}"><c:param name="searchKeyword" value="${searchVO.searchKeyword}" /></c:if>
+</c:url>
+
 <div class="container">
 	<div id="contents">
+	
+		<!-- 검색바가 구현되어있다. -->
 		<%-- 검색영역 --%>
 		<div id="bbs_search">
 	        <form name="frm" method="post" action="/board/selectList.do">
@@ -49,12 +53,16 @@
 	    
 	    <%-- 목록영역 --%>
 		<div id="bbs_wrap">
+			
+			<!-- 총 게시물과 현재페이지를 나타내주는 토탈창 -->
 			<div class="total">
 				총 게시물 
 				<strong><c:out value="${paginationInfo.totalRecordCount}"/></strong>건 ㅣ 
 				현재페이지 <strong><c:out value="${paginationInfo.currentPageNo}"/></strong>/
 				<c:out value="${paginationInfo.totalPageCount}"/>
-			</div>	
+			</div>
+			<!-- 총 게시물과 현재페이지를 나타내주는 토탈창 -->	
+			
 	        <div class="bss_list">
 	            <table class="list_table">
 	              <thead>
@@ -87,13 +95,17 @@
 	                  <%-- 일반 글 --%>
 	                  <c:forEach var="result" items="${resultList}" varStatus="status">
 							<tr>
+								<!-- 게시글 번호를 보여주는 로직, 최신글부터 역순 번호표기, 원리를 스스로 찾아보기 숙제-->
 								<td class="num"><c:out value="${paginationInfo.totalRecordCount - ((searchVO.pageIndex-1) * searchVO.pageUnit) - (status.count - 1)}" /></td>
+								<!-- 게시글 번호를 보여주는 로직, 최신글부터 역순 번호표기, 원리를 스스로 찾아보기 숙제-->
+								
 								<td class="tit">
 									<c:url var="viewUrl" value="/board/select.do${_BASE_PARAM}">
 										<c:param name="boardId" value="${result.boardId}"/>
 										<c:param name="pageIndex" value="${searchVO.pageIndex}" />
 									</c:url>
 									<a href="${viewUrl}">
+										<!-- 비밀글인경우 이미지가 붙도록 -->
 										<c:if test="${result.othbcAt eq 'Y'}">
 											<img src="/asset/BBSTMP_0000000000001/images/ico_board_lock.gif" alt="비밀 글 아이콘" />
 										</c:if>
@@ -125,6 +137,7 @@
 	</div>
 </div>
 <script>
+/* 수정,등록,삽입등 어떤 액션을 취하고 forward했을때 보내는 메시지 */
 <c:if test="${not empty message}">
 	alert("${message}");
 </c:if>

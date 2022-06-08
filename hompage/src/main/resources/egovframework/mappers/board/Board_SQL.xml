@@ -2,13 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="egovframework.let.board.service.impl.BoardMapper">
 	
-	<!-- <resultMap id="crud" type="egovframework.let.crud.service.CrudVO">
-		<result property="crudId" column="CRUD_ID"/>
-		<result property="crudSj" column="CRUD_SJ"/>
-		<result property="crudCn" column="CRUD_CN"/>
-		<result property="userNm" column="USER_NM"/>
+	<resultMap id="board" type="egovframework.let.board.service.BoardVO">
+		<result property="boardId" column="BOARD_ID"/>
+		<result property="boardSj" column="BOARD_SJ"/>
+		<result property="boardCn" column="BOARD_CN"/>
+		<result property="inqireCo" column="INQIRE_CO"/>
+		<result property="creatIp" column="CREAT_IP"/>
+		<result property="othbcAt" column="OTHBC_AT"/>
+		<result property="useAt" column="USE_AT"/>
+		<result property="atchFileId" column="ATCH_FILE_ID"/>
 		<result property="frstRegistPnttm" column="FRST_REGIST_PNTTM"/>
-	</resultMap> -->
+		<result property="frstRegisterId" column="FRST_REGISTER_ID"/>
+	</resultMap> 
 	
 	
 	
@@ -26,9 +31,10 @@
 		 ,A.FRST_REGIST_PNTTM
 		 ,A.FRST_REGISTER_ID
 		 FROM BOARD A
+		 <!-- <sql id="selectBoardListWhere"> 에서 정의한 로직을 임포트 시킨다. -->
 		 <include refid="selectBoardListWhere"></include>
 		 ORDER BY A.FRST_REGIST_PNTTM DESC
-		 
+		 <!-- 공지글일때는 리미트가 없다.즉 모두 표시 -->
 		 <if test='noticeAt !="Y"'>
 		 	LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
 		 </if>
@@ -38,9 +44,11 @@
 		SELECT
 		  COUNT(*) CNT
 		FROM BOARD A
+		<!-- <sql id="selectBoardListWhere"> 에서 정의한 로직을 임포트 시킨다. -->
 		<include refid="selectBoardListWhere"></include>
 	</select>
 	
+	<!-- 공통으로 쓰는 부분이기 때문에 따로 빼둔것이다. -->
 	<sql id="selectBoardListWhere">
 		<where>
 			A.USE_AT='Y'
@@ -52,6 +60,8 @@
 						<if test='searchCondition !=null and searchCondition !=""'>
 							<choose>
 								<when test='searchCondition =="0"'>
+								<!-- like는 %를 붙일때 양쪽에 붙일수 있지만 하나만 붙이는게 좋다.  -->
+								<!-- concat를 쓴이유는 문자열을 합쳐주는데 그 중에 변수가 있기떄문에 concat를 쓴것이다. -->
 									AND A.BOARD_SJ LIKE CONCAT('%',#{searchKeyword},'%')
 								</when>
 								<when test='searchCondition =="1"'>
@@ -100,45 +110,65 @@
 		)
 	</insert>
 	
-	
-</mapper>
-	<!-- <insert id="insertCrud" parameterType="crudVO">
-		INSERT INTO LETCRUD (
-			CRUD_ID
-		    , CRUD_SJ
-		    , CRUD_CN
-		    , USER_NM
-		    , FRST_REGIST_PNTTM
-		) VALUES (
-			#{crudId}
-			, #{crudSj}
-			, #{crudCn}
-			, #{userNm}
-			, NOW()
-		)
-	</insert>
-	
-	<select id="selectCrud" resultMap="crud">
+	<select id="selectBoard" resultMap="board">
 		SELECT
-		  CRUD_ID
-		  , CRUD_SJ
-		  , CRUD_CN
-		  , USER_NM
-		  , FRST_REGIST_PNTTM
-		FROM LETCRUD
-		WHERE CRUD_ID = #{crudId}
+		   BOARD_ID
+			 ,BOARD_SJ
+			 ,BOARD_CN
+			 ,INQIRE_CO
+			 ,CREAT_IP
+			 ,NOTICE_AT
+			 ,OTHBC_AT
+			 ,USE_AT
+			 ,ATCH_FILE_ID
+			 ,FRST_REGIST_PNTTM
+			 ,FRST_REGISTER_ID
+		FROM BOARD
+		WHERE BOARD_ID = #{boardId}
+		AND USE_AT ='Y'
 	</select>
 	
-	<update id="updateCrud" parameterType="egovframework.let.crud.service.CrudVO">
-		UPDATE LETCRUD SET
-			CRUD_SJ = #{crudSj}
-		    , CRUD_CN = #{crudCn}
-		    , USER_NM = #{userNm}
-		WHERE CRUD_ID = #{crudId}
+	<update id="updateViewCnt" parameterType="egovframework.let.board.service.BoardVO">
+	<!-- INQIRE_CO는 게시물 조회수이다. 해당 쿼리가 실행될때마다  INQIRE_CO에서 0으로 설정해두었던 값에 +1을 
+	해줘서 조회수를 높여준다. 이방식은 너무나도 잘쓰여서 언제나 숙지하는편이 좋다고 한다.-->
+	UPDATE BOARD SET
+	INQIRE_CO = INQIRE_CO+1
+	WHERE BOARD_ID = #{boardId}
 	</update>
 	
-	<delete id="deleteCrud" parameterType="egovframework.let.crud.service.CrudVO">
-		DELETE FROM LETCRUD
-		WHERE CRUD_ID = #{crudId}
-	</delete> -->
+	<update id="updateBoard" parameterType="egovframework.let.board.service.BoardVO">
+		UPDATE BOARD SET
+			BOARD_SJ=#{boardSj}
+			,BOARD_CN=#{boardCn}
+			,NOTICE_AT=#{noticeAt}
+			,OTHBC_AT=#{othbcAt}
+			<if test='atchFileId != null and atchFileId !=""'>
+				,ATCH_FILE_ID=#{atchFileId}
+			</if>
+			,LAST_UPDT_PNTTM= NOW()
+			,LAST_UPDUSR_ID=#{userId}
+		WHERE BOARD_ID =#{boardId}
+		<!-- 게시글을 쓴사람의 아이디와 유저의 아이디의 값이 맞는지 보안적목적으로 한번더 추가가한 코드-->
+		<!-- 관리자가 아닐시 -->
+		<if test='mngAt !="Y"'>
+			<!-- 게시글에 처음 등록한 아이디와 유저의 아이디가 맞는지 확인한다. -->
+			AND FRST_REGISTER_ID=#{userId}
+		</if>	
+	</update>
+	
+	<update id="deleteBoard" parameterType="egovframework.let.board.service.BoardVO">
+		UPDATE BOARD SET
+			USE_AT='N'
+		WHERE BOARD_ID =#{boardId}
+		<!-- 게시글을 쓴사람의 아이디와 유저의 아이디의 값이 맞는지 보안적목적으로 한번더 추가가한 코드-->
+		<!-- 관리자가 아닐시 -->
+		<if test='mngAt !="Y"'>
+			<!-- 게시글에 처음 등록한 아이디와 유저의 아이디가 맞는지 확인한다. -->
+			AND FRST_REGISTER_ID=#{userId}
+		</if>	
+	</update>
+	
+	
+</mapper>
+	
 	
