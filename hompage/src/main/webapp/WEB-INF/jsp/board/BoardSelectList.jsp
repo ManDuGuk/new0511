@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -13,6 +13,7 @@
 <meta http-equiv="Content-Language" content="ko" >
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta charset="UTF-8">
 <title>수업용 게시판</title>
 <!-- BBS Style -->
 <link href="/asset/BBSTMP_0000000000001/style.css" rel="stylesheet" />
@@ -93,13 +94,22 @@
 					  </c:forEach>
 	                  
 	                  <%-- 일반 글 --%>
+	                  <!-- varStatus 포이치의 속성,포이치가 쓰는 변수명 -->
 	                  <c:forEach var="result" items="${resultList}" varStatus="status">
 							<tr>
 								<!-- 게시글 번호를 보여주는 로직, 최신글부터 역순 번호표기, 원리를 스스로 찾아보기 숙제-->
+								<!-- totalRecordCount 총수 - ( (pageIndex현재페이지 번호 -1)* pageUnit페이지당 갯수 - status.count -->
 								<td class="num"><c:out value="${paginationInfo.totalRecordCount - ((searchVO.pageIndex-1) * searchVO.pageUnit) - (status.count - 1)}" /></td>
 								<!-- 게시글 번호를 보여주는 로직, 최신글부터 역순 번호표기, 원리를 스스로 찾아보기 숙제-->
 								
 								<td class="tit">
+									<c:if test="${not empty result.atchFileNm}">
+										<c:url var="thumbUrl" value="/cmm/fms/getThumbImage.do">
+											<c:param name="thumbYn" value="Y"/>
+											<c:param name="atchFileNm" value="${result.atchFileNm}"/>
+										</c:url>
+										<img src="${thumbUrl}" alt=""/>
+									</c:if>
 									<c:url var="viewUrl" value="/board/select.do${_BASE_PARAM}">
 										<c:param name="boardId" value="${result.boardId}"/>
 										<c:param name="pageIndex" value="${searchVO.pageIndex}" />

@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -13,6 +13,7 @@
 <meta http-equiv="Content-Language" content="ko" >
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta charset="UTF-8">
 <title>수업용 게시판</title>
 <!-- BBS Style -->
 <link href="/asset/BBSTMP_0000000000001/style.css" rel="stylesheet" />
@@ -49,6 +50,14 @@
 					<dd><fmt:formatDate value="${result.frstRegistPnttm}" pattern="yyyy-MM-dd"/></dd>
 					<dt>조회수</dt>
 					<dd><c:out value="${result.inqireCo}"/></dd>
+				</dl>
+				<dl class="tit_view">
+					<dt>첨부파일목록</dt>
+					<dd>
+						<c:import url="/cmm/fms/selectFileInfs.do" charEncoding="utf-8">
+							<c:param name="param_atchFileId" value="${result.atchFileId}"/>
+						</c:import>
+					</dd>
 				</dl>
 				<div class="view_cont">
 					<c:out value="${result.boardCn}" escapeXml="false"/>

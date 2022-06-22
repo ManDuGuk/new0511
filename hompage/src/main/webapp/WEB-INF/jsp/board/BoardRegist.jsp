@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
@@ -13,12 +13,94 @@
 <meta http-equiv="Content-Language" content="ko" >
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta charset="UTF-8">
 <title>수업용 게시판</title>
 <!-- BBS Style -->
 <link href="/asset/BBSTMP_0000000000001/style.css" rel="stylesheet" />
 <!-- 공통 Style -->
 <link href="/asset/LYTTMP_0000000000000/style.css" rel="stylesheet" />
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+<!-- tiny에디터 -->
+<!-- <script src="https://cdn.tiny.cloud/1/사용자토큰번호/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script> -->
+<script src="https://cdn.tiny.cloud/1/oteqmb5jkcqbeojzawucc9q2f2k1yx8kpnanuz8lqeaz4lq5/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+<script>
+$(function(){
+    var plugins = [
+        "advlist", "autolink", "lists", "link", "image", "charmap", "print", "preview", "anchor",
+        "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media", "table",
+        "paste", "code", "help", "wordcount", "save"
+    ];
+    var edit_toolbar = 'formatselect fontselect fontsizeselect |'
+               + ' forecolor backcolor |'
+               + ' bold italic underline strikethrough |'
+               + ' alignjustify alignleft aligncenter alignright |'
+               + ' bullist numlist |'
+               + ' table tabledelete |'
+               + ' link image';
+
+    tinymce.init({
+    	language: "ko_KR", //한글판으로 변경
+    	//아이디가 bordCn이라는걸 찾아라
+        selector: '#boardCn',
+        height: 500,
+        menubar: false,
+        plugins: plugins,
+        toolbar: edit_toolbar,
+        
+        /*** image upload ***/
+        image_title: true,
+        /* enable automatic uploads of images represented by blob or data URIs*/
+        automatic_uploads: true,
+        /*
+            URL of our upload handler (for more details check: https://www.tiny.cloud/docs/configure/file-image-upload/#images_upload_url)
+            images_upload_url: 'postAcceptor.php',
+            here we add custom filepicker only to Image dialog
+        */
+        file_picker_types: 'image',
+        /* and here's our custom image picker*/
+        file_picker_callback: function (cb, value, meta) {
+            var input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+
+            /*
+            Note: In modern browsers input[type="file"] is functional without
+            even adding it to the DOM, but that might not be the case in some older
+            or quirky browsers like IE, so you might want to add it to the DOM
+            just in case, and visually hide it. And do not forget do remove it
+            once you do not need it anymore.
+            */
+            input.onchange = function () {
+                var file = this.files[0];
+
+                var reader = new FileReader();
+                reader.onload = function () {
+                    /*
+                    Note: Now we need to register the blob in TinyMCEs image blob
+                    registry. In the next release this part hopefully won't be
+                    necessary, as we are looking to handle it internally.
+                    */
+                    var id = 'blobid' + (new Date()).getTime();
+                    var blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                    var base64 = reader.result.split(',')[1];
+                    var blobInfo = blobCache.create(id, file, base64);
+                    blobCache.add(blobInfo);
+
+                    /* call the callback and populate the Title field with the file name */
+                    cb(blobInfo.blobUri(), { title: file.name });
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        },
+        /*** image upload ***/
+        
+        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+    });
+});
+</script> 
 </head>
 <body>
 
@@ -37,8 +119,10 @@
 	<!-- 감싸는 영역 -->
 	<div id="contents">
 		<!-- onsubmit 폼 태그를 유효성 검사할때 많이쓴다. 누락한게 있으면 작동한다.regist() 검사가 제대로 되면 리턴을 보낸다. -->
-		<form action="${actionUrl}" method="post" id="frm" name="frm" onsubmit="return regist()">
+		<form action="${actionUrl}" method="post" id="frm" name="frm" onsubmit="return regist()" enctype="multipart/form-data">
 			<input type="hidden" name="boardId" value="${result.boardId}"/>
+			<input type="hidden" name="returnUrl" value="/board/boardRegist.do"/>
+			
 			
 			<table class="chart2">
 				<!-- 이 표에대한 제목 꼭들어가 줘야한다. 장애인을 위한 웹편의성  -->
@@ -101,6 +185,33 @@
 							<textarea id="boardCn" name="boardCn" rows="15" title="내용입력"><c:out value="${result.boardCn}"/></textarea>
 						</td>
 					</tr>
+					
+					<c:if test="${not empty result.atchFileId}">
+						<tr>
+							<th scope="row">기존<br/>첨부파일목록</th>
+							<td>
+								<c:import url="/cmm/fms/selectFileInfsForUpdate.do" charEncoding="utf-8">
+									<c:param name="param_atchFileId" value="${result.atchFileId}"/>
+								</c:import>
+							</td>
+						</tr>
+					</c:if>
+					
+					<!-- 첨부파일올리는 곳 -->
+					<tr>
+						<th scope="row">파일첨부</th>
+						<td>
+							<input type="file" name="file_1"/>
+							<br/>
+							<input type="file" name="file_2"/>
+							<br/>
+							<input type="file" name="file_3"/>
+							<br/>
+							<input type="file" name="file_4"/>
+							<br/>
+						</td>
+					</tr>
+					
 				</tbody>
 			</table>
 			<!--클래스가 두개 쓰인다. btn-cont  / ar-->
@@ -166,6 +277,9 @@ function regist(){
 		alert("제목을 입력해주세요");
 		return false;
 	}
+	
+	//에디터 내용저장//이걸 해줘야 에디터로 편집한 내용이 적용된다.
+	$("#boardCn").val(tinymce.activeEditor.getContent());
 }
 </script>
 
